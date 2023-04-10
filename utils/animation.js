@@ -2,9 +2,12 @@ import * as THREE from "three";
 import { gsap } from "gsap";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
+
+let camera;
+let cube2;
 export function createAnimation(app) {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -81,6 +84,21 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 let initialCameraAnimationDone = false;
 camera.position.z = 300;
+//Creates second location for projects
+const cubeGeometry2 = new THREE.BoxGeometry();
+const cubeMaterial2 = new THREE.MeshBasicMaterial({ 
+    color: 0x00ff00,
+    wireframe: true,
+    wireframeLinewidth: 2 });
+cube2 = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
+cube2.position.set(100, 0, -200); // Set the position of the second cube
+scene.add(cube2);
+
+const animateCube2 = () => {
+  cube2.rotation.x += 0.01;
+  cube2.rotation.y += 0.01;
+};
+
 function animate() {
     requestAnimationFrame(animate);
     if (!initialCameraAnimationDone) {
@@ -123,6 +141,7 @@ function animate() {
         stars.rotation.z += -0.001;
     }
     controls.update();
+    animateCube2();
     renderer.render(scene, camera);
 }
 
@@ -137,4 +156,24 @@ setTimeout(() => {
 setTimeout(() => {
     animationFinished = true;
 }, totalAnimationDuration * 200);
+}
+export { camera };
+export { cube2 };
+export function moveCameraToPosition(x, y, z) {
+    let targetPosition = new THREE.Vector3(x, y, z);
+    let duration = 2;
+    gsap.to(camera.position, {
+      duration,
+      x: targetPosition.x,
+      y: targetPosition.y,
+      z: targetPosition.z,
+      onUpdate: () => {
+        camera.updateProjectionMatrix();
+      },
+    });
+  }
+  //Delay function for time
+export async function delayCamera(n) {
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+    await delay(n);
 }
